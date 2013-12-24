@@ -29,7 +29,13 @@ object Zipkin extends Build {
     "cglib"                   %  "cglib"        % "2.2.2" % "test",
     "asm"                     %  "asm"          % "1.5.3" % "test",
     "org.objenesis"           %  "objenesis"    % "1.1"   % "test",
-    "junit"                   %  "junit"        % "4.7"   % "test"
+    "org.scalatest"           %% "scalatest"    % "1.9.1" % "test",
+    "org.scala-tools.testing" %% "specs"        % "1.6.9" % "test" cross CrossVersion.binaryMapped {
+      case "2.9.2" => "2.9.1"
+      case "2.10.0" => "2.10"
+      case x => x
+    },
+    "junit" % "junit" % "4.10" % "test"
   )
 
   def zipkinSettings = Seq(
@@ -168,6 +174,7 @@ object Zipkin extends Build {
       "com.twitter"     % "cassie-core"       % CASSIE_VERSION,
       "com.twitter"     % "cassie-serversets" % CASSIE_VERSION,
       "com.twitter"     % "util-logging"      % UTIL_VERSION,
+      "com.twitter"     % "util-app"          % UTIL_VERSION,
       "org.iq80.snappy" % "snappy"            % "0.1"
     ) ++ testDependencies,
 
