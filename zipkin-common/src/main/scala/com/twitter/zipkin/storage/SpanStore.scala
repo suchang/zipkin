@@ -182,7 +182,7 @@ class InMemorySpanStore extends SpanStore {
         spans
     }) filter { span =>
       span.lastAnnotation match {
-        case Some(ann) => ann.timestamp >= endTs
+        case Some(ann) => ann.timestamp <= endTs
         case None => false
       }
     } filter(shouldIndex) take(limit) map { span =>
@@ -219,11 +219,16 @@ class InMemorySpanStore extends SpanStore {
   }
 
   def getTracesDuration(traceIds: Seq[Long]): Future[Seq[TraceIdDuration]] = call {
-    spans filter { span => traceIds.contains(span.traceId) } flatMap { span =>
-      span.duration map { d =>
-        TraceIdDuration(span.traceId, d, span.firstAnnotation.get.timestamp)
+    traceIds.flatMap { traceId =>
+      val timestamps = spans.filter { span => span.traceId == traceId }.flatMap { span =>
+        Seq(span.firstAnnotation.map { _.timestamp }, span.lastAnnotation.map { _.timestamp }).flatten
       }
-    } toList
+
+      if (timestamps.isEmpty)
+        None
+      else
+        Some(TraceIdDuration(traceId, timestamps.max - timestamps.min, timestamps.min))
+    }
   }
 
   def getAllServiceNames: Future[Set[String]] = call {
